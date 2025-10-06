@@ -20,6 +20,16 @@ app.use('/uploads', express.static(UPLOAD_DIR));
 // articles endpoints removed
 app.use('/api/documents', docsRouter);
 
+// Serve frontend build if present (backend/public)
+const CLIENT_BUILD = path.join(__dirname, '..', 'public');
+if (fs.existsSync(CLIENT_BUILD)) {
+    app.use(express.static(CLIENT_BUILD));
+    // SPA fallback
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(CLIENT_BUILD, 'index.html'));
+    });
+}
+
 const MONGODB = process.env.MONGODB || 'mongodb://127.0.0.1:27017/buda';
 const PORT = process.env.PORT || 4000;
 
@@ -30,5 +40,6 @@ mongoose.connect(MONGODB, { useNewUrlParser: true, useUnifiedTopology: true })
     })
     .catch(err => {
         console.error('MongoDB connection error', err);
-        process.exit(1);
+        // don't exit immediately in some PaaS environments; keep process alive so logs are visible
+        // process.exit(1);
     });
