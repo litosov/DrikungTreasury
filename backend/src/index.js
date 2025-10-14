@@ -38,13 +38,15 @@ if (fs.existsSync(CLIENT_BUILD)) {
 const MONGODB = process.env.MONGODB || 'mongodb://127.0.0.1:27017/buda';
 const PORT = process.env.PORT || 4000;
 
+// Start the HTTP server immediately so the service is healthy even if DB is down.
+app.listen(PORT, () => console.log('Server running on port', PORT));
+
+// Connect to MongoDB in parallel; log status but don't block server startup.
 mongoose.connect(MONGODB, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
         console.log('MongoDB connected');
-        app.listen(PORT, () => console.log('Server running on port', PORT));
     })
     .catch(err => {
         console.error('MongoDB connection error', err);
-        // don't exit immediately in some PaaS environments; keep process alive so logs are visible
-        // process.exit(1);
+        // Keep process alive to allow static/frontend and non-DB routes to work
     });
