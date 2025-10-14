@@ -1,5 +1,6 @@
 import React from 'react'
 import axios from 'axios'
+import { apiUrl } from '../lib/api'
 
 export default function Upload() {
     const [title, setTitle] = React.useState('')
@@ -21,7 +22,7 @@ export default function Upload() {
         fd.append('category', category)
         fd.append('tags', tags)
         try {
-            await axios.post('http://localhost:4000/api/documents', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+            await axios.post(apiUrl('/api/documents'), fd, { headers: { 'Content-Type': 'multipart/form-data' } })
             alert('Uploaded')
             setTitle(''); setExcerpt(''); setEnglishPdf(null); setTibetanPdf(null); setCategory('')
         } catch (e) { alert('Upload failed') }

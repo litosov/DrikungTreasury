@@ -1,5 +1,6 @@
 import React from 'react'
 import axios from 'axios'
+import { API_BASE, fileUrl, apiUrl } from '../lib/api'
 import PDFReader from '../components/PDFReader'
 
 export default function Documents({ onSelect }) {
@@ -11,7 +12,7 @@ export default function Documents({ onSelect }) {
         const params = {}
         if (q) params.q = q
         if (category) params.category = category
-        axios.get('http://localhost:4000/api/documents', { params }).then(r => setDocs(r.data)).catch(() => { })
+    axios.get(apiUrl('/api/documents'), { params }).then(r => setDocs(r.data)).catch(() => { })
     }, [q, category])
 
     React.useEffect(() => { fetch() }, [fetch])
@@ -77,7 +78,7 @@ export default function Documents({ onSelect }) {
                                     <div className="mt-2 text-xs text-gray-500">Genre: {d.category || '—'}</div>
                                 </div>
                                 <div className="mt-3 md:mt-0 md:ml-4 flex flex-row md:flex-col items-center md:items-end gap-2">
-                                    <a className="text-blue-600 text-sm" href={`http://localhost:4000/uploads/${d.filename}`} target="_blank" rel="noreferrer">Download</a>
+                                    <a className="text-blue-600 text-sm" href={fileUrl(d.filename)} target="_blank" rel="noreferrer">Download</a>
                                     <button className="bg-blue-600 text-white px-3 py-1 rounded text-sm" onClick={() => openDoc(d)}>Read Text</button>
                                 </div>
                             </div>

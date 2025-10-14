@@ -1,13 +1,14 @@
 import React from 'react'
 import PDFReader from '../components/PDFReader'
+import { fileUrl } from '../lib/api'
 
 export default function DocumentDetail({ doc, onClose }) {
     const [which, setWhich] = React.useState('english') // 'english' or 'tibetan'
 
     if (!doc) return null
 
-    const englishUrl = `http://localhost:4000/uploads/${doc.filename}`
-    const tibetanUrl = doc.tibetTranslationFilename ? `http://localhost:4000/uploads/${doc.tibetTranslationFilename}` : null
+    const englishUrl = fileUrl(doc.filename)
+    const tibetanUrl = doc.tibetTranslationFilename ? fileUrl(doc.tibetTranslationFilename) : null
 
     return (
         <div>
