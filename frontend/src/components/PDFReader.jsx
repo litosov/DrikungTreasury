@@ -21,9 +21,10 @@ export default function PDFReader({ url }) {
         setHeadOk(true)
         setHeadStatus(null)
         if (!url) return
+        console.debug('[PDF][HEAD] checking', url)
         fetch(url, { method: 'HEAD' })
             .then(r => { if (!cancelled) { setHeadOk(r.ok); setHeadStatus(r.status) } })
-            .catch(e => { if (!cancelled) { setHeadOk(false); setHeadStatus(null); setError(e?.message || String(e)) } })
+            .catch(e => { if (!cancelled) { console.error('[PDF][HEAD][ERROR]', e); setHeadOk(false); setHeadStatus(null); setError(e?.message || String(e)) } })
         return () => { cancelled = true }
     }, [url])
 
@@ -46,7 +47,7 @@ export default function PDFReader({ url }) {
                         </div>
                     </div>
                 )}
-                <Document file={url} onLoadSuccess={onDocumentLoadSuccess} onLoadError={(e) => setError(e?.message || String(e))}>
+                <Document file={url} onLoadSuccess={onDocumentLoadSuccess} onLoadError={(e) => { console.error('[PDF][LOAD][ERROR]', e); setError(e?.message || String(e)) }}>
                     {error && (
                         <div className="p-3 bg-red-100 text-red-700 rounded w-full max-w-[800px]">PDF load error: {error}
                             <div className="mt-2">

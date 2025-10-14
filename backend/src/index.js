@@ -26,6 +26,15 @@ const DEFAULT_UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
 const DATA_UPLOAD_DIR = '/data/uploads';
 const UPLOAD_DIR = process.env.UPLOAD_DIR || (fs.existsSync('/data') ? DATA_UPLOAD_DIR : DEFAULT_UPLOAD_DIR);
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+// Log access to uploaded files for debugging
+app.use('/uploads', (req, res, next) => {
+    const p = path.join(UPLOAD_DIR, decodeURIComponent(req.path));
+    console.log(`[UPLOADS][REQ] ${req.method} ${req.originalUrl} -> ${p}`);
+    res.on('finish', () => {
+        console.log(`[UPLOADS][RES] ${req.method} ${req.originalUrl} -> ${res.statusCode}`);
+    });
+    next();
+});
 app.use('/uploads', express.static(UPLOAD_DIR));
 
 // articles endpoints removed
