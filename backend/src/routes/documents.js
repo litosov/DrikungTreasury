@@ -38,6 +38,9 @@ router.post('/', upload.fields([
     { name: 'tibetan_pdf', maxCount: 1 }
 ]), async (req, res) => {
     try {
+        // Debug logging (can be removed later)
+        console.log('[UPLOAD] body keys:', Object.keys(req.body));
+        console.log('[UPLOAD] files keys:', Object.keys(req.files || {}));
         const file = (req.files['english_pdf'] || req.files['pdf'] || [])[0] || null;
         const tib = (req.files['tibetan_pdf'] || req.files['tibet_pdf'] || [])[0] || null;
         if (!file) return res.status(400).json({ error: 'pdf is required' });
@@ -55,6 +58,7 @@ router.post('/', upload.fields([
         await doc.save();
         res.status(201).json(doc);
     } catch (err) {
+        console.error('[UPLOAD][ERROR]', err);
         res.status(500).json({ error: err.message });
     }
 });

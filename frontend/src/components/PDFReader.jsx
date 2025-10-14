@@ -1,7 +1,9 @@
 import React from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
-
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+// Import worker locally (Vite will bundle) to avoid CORS from CDN
+// eslint-disable-next-line import/no-unresolved
+import workerSrc from 'pdfjs-dist/build/pdf.worker.min.js?url'
+pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
 export default function PDFReader({ url }) {
     const [numPages, setNumPages] = React.useState(0)

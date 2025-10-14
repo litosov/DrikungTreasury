@@ -20,6 +20,11 @@ app.use('/uploads', express.static(UPLOAD_DIR));
 // articles endpoints removed
 app.use('/api/documents', docsRouter);
 
+// Simple health check
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', time: new Date().toISOString() });
+});
+
 // Serve frontend build if present (backend/public)
 const CLIENT_BUILD = path.join(__dirname, '..', 'public');
 if (fs.existsSync(CLIENT_BUILD)) {
