@@ -12,7 +12,7 @@ export default function Documents({ onSelect }) {
         const params = {}
         if (q) params.q = q
         if (category) params.category = category
-    axios.get(apiUrl('/api/documents'), { params }).then(r => setDocs(r.data)).catch(() => { })
+        axios.get(apiUrl('/api/documents'), { params }).then(r => setDocs(r.data)).catch(() => { })
     }, [q, category])
 
     React.useEffect(() => { fetch() }, [fetch])
