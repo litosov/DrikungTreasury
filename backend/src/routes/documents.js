@@ -13,6 +13,7 @@ const storage = multer.diskStorage({
         cb(null, safe);
     }
 });
+// Accept multiple possible field names for backward compatibility.
 const upload = multer({ storage });
 
 router.get('/', async (req, res) => {
@@ -29,10 +30,16 @@ router.get('/', async (req, res) => {
     res.json(docs);
 });
 
-router.post('/', upload.fields([{ name: 'pdf', maxCount: 1 }, { name: 'tibet_pdf', maxCount: 1 }]), async (req, res) => {
+// Support alternative field names: pdf | english_pdf and tibet_pdf | tibetan_pdf
+router.post('/', upload.fields([
+    { name: 'pdf', maxCount: 1 },
+    { name: 'english_pdf', maxCount: 1 },
+    { name: 'tibet_pdf', maxCount: 1 },
+    { name: 'tibetan_pdf', maxCount: 1 }
+]), async (req, res) => {
     try {
-        const file = req.files['pdf'] ? req.files['pdf'][0] : null;
-        const tib = req.files['tibet_pdf'] ? req.files['tibet_pdf'][0] : null;
+        const file = (req.files['english_pdf'] || req.files['pdf'] || [])[0] || null;
+        const tib = (req.files['tibetan_pdf'] || req.files['tibet_pdf'] || [])[0] || null;
         if (!file) return res.status(400).json({ error: 'pdf is required' });
         const tags = req.body.tags ? req.body.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
         const doc = new Document({

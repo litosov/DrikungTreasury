@@ -13,10 +13,9 @@ export default function Upload() {
     const submit = async () => {
         if (!englishPdf) { alert('Select English PDF'); return }
         const fd = new FormData()
-        // send both legacy and explicit keys for compatibility
-        fd.append('pdf', englishPdf)
+        // send new canonical field names only
         fd.append('english_pdf', englishPdf)
-        if (tibetanPdf) { fd.append('tibet_pdf', tibetanPdf); fd.append('tibetan_pdf', tibetanPdf) }
+        if (tibetanPdf) fd.append('tibetan_pdf', tibetanPdf)
         fd.append('title', title)
         fd.append('excerpt', excerpt)
         fd.append('category', category)
