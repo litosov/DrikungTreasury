@@ -10,8 +10,22 @@ export default function PDFReader({ url }) {
     const [numPages, setNumPages] = React.useState(0)
     const [scale, setScale] = React.useState(1.0)
     const [error, setError] = React.useState(null)
+    const [headOk, setHeadOk] = React.useState(true)
+    const [headStatus, setHeadStatus] = React.useState(null)
 
     function onDocumentLoadSuccess({ numPages: n }) { setNumPages(n) }
+
+    React.useEffect(() => {
+        let cancelled = false
+        setError(null)
+        setHeadOk(true)
+        setHeadStatus(null)
+        if (!url) return
+        fetch(url, { method: 'HEAD' })
+            .then(r => { if (!cancelled) { setHeadOk(r.ok); setHeadStatus(r.status) } })
+            .catch(e => { if (!cancelled) { setHeadOk(false); setHeadStatus(null); setError(e?.message || String(e)) } })
+        return () => { cancelled = true }
+    }, [url])
 
     return (
         <div className="bg-white p-4 rounded shadow w-full">
@@ -24,9 +38,21 @@ export default function PDFReader({ url }) {
             </div>
 
             <div className="flex flex-col items-center space-y-6">
+                {!headOk && (
+                    <div className="p-3 bg-yellow-100 text-yellow-800 rounded w-full max-w-[800px]">
+                        Cannot access PDF (status {headStatus ?? 'n/a'}). The file may be missing on the server. Try re-uploading.
+                        <div className="mt-2">
+                            <a className="text-blue-700 underline" href={url} target="_blank" rel="noreferrer">Open original in new tab</a>
+                        </div>
+                    </div>
+                )}
                 <Document file={url} onLoadSuccess={onDocumentLoadSuccess} onLoadError={(e) => setError(e?.message || String(e))}>
                     {error && (
-                        <div className="p-3 bg-red-100 text-red-700 rounded w-full max-w-[800px]">PDF load error: {error}</div>
+                        <div className="p-3 bg-red-100 text-red-700 rounded w-full max-w-[800px]">PDF load error: {error}
+                            <div className="mt-2">
+                                <a className="text-blue-700 underline" href={url} target="_blank" rel="noreferrer">Open original in new tab</a>
+                            </div>
+                        </div>
                     )}
                     {Array.from({ length: numPages }).map((_, idx) => (
                         <div key={idx} className="w-full flex justify-center">
