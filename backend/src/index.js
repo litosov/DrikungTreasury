@@ -13,6 +13,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Avoid cached API responses while developing/iterating
+app.use('/api', (req, res, next) => {
+    res.set('Cache-Control', 'no-store');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    next();
+});
+
 // Choose uploads directory: env > /data/uploads (Render disk) > repo uploads
 const DEFAULT_UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
 const DATA_UPLOAD_DIR = '/data/uploads';
