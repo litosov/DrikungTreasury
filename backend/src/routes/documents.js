@@ -49,6 +49,31 @@ router.post('/', upload.fields([
         const file = (req.files['english_pdf'] || req.files['pdf'] || [])[0] || null;
         const tib = (req.files['tibetan_pdf'] || req.files['tibet_pdf'] || [])[0] || null;
         if (!file) return res.status(400).json({ error: 'pdf is required' });
+
+        // Validate PDFs by checking magic header %PDF-
+        const checkPdf = (f) => {
+            try {
+                const full = path.join(UPLOAD_DIR, f.filename);
+                const fd = fs.openSync(full, 'r');
+                const buf = Buffer.alloc(5);
+                fs.readSync(fd, buf, 0, 5, 0);
+                fs.closeSync(fd);
+                const header = buf.toString('ascii');
+                console.log('[UPLOAD][FILE]', f.originalname, '=>', f.filename, 'size', f.size, 'header', JSON.stringify(header));
+                return header === '%PDF-';
+            } catch (e) {
+                console.error('[UPLOAD][CHECK][ERROR]', e);
+                return false;
+            }
+        };
+        if (!checkPdf(file)) {
+            try { fs.unlinkSync(path.join(UPLOAD_DIR, file.filename)); } catch { }
+            return res.status(400).json({ error: 'Uploaded file is not a valid PDF' });
+        }
+        if (tib && !checkPdf(tib)) {
+            try { fs.unlinkSync(path.join(UPLOAD_DIR, tib.filename)); } catch { }
+            return res.status(400).json({ error: 'Tibetan file is not a valid PDF' });
+        }
         const tags = req.body.tags ? req.body.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
         const doc = new Document({
             title: req.body.title || file.originalname,
