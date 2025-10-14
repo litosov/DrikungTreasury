@@ -1,8 +1,9 @@
 import React from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
-// Import worker locally (Vite will bundle) to avoid CORS from CDN
+// Import worker locally (Vite will bundle) to avoid CORS from CDN.
+// For pdfjs-dist v5+, use the ESM worker (.mjs)
 // eslint-disable-next-line import/no-unresolved
-import workerSrc from 'pdfjs-dist/build/pdf.worker.min.js?url'
+import workerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
 export default function PDFReader({ url }) {
