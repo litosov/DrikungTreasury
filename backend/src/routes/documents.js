@@ -1,11 +1,16 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const Document = require('../models/document');
 
 const router = express.Router();
 
-const UPLOAD_DIR = path.join(__dirname, '..', '..', 'uploads');
+// Mirror upload dir logic from server index: env > /data/uploads > repo uploads
+const DEFAULT_UPLOAD_DIR = path.join(__dirname, '..', '..', 'uploads');
+const DATA_UPLOAD_DIR = '/data/uploads';
+const UPLOAD_DIR = process.env.UPLOAD_DIR || (fs.existsSync('/data') ? DATA_UPLOAD_DIR : DEFAULT_UPLOAD_DIR);
+if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, UPLOAD_DIR),
     filename: (req, file, cb) => {

@@ -9,6 +9,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 export default function PDFReader({ url }) {
     const [numPages, setNumPages] = React.useState(0)
     const [scale, setScale] = React.useState(1.0)
+    const [error, setError] = React.useState(null)
 
     function onDocumentLoadSuccess({ numPages: n }) { setNumPages(n) }
 
@@ -23,7 +24,10 @@ export default function PDFReader({ url }) {
             </div>
 
             <div className="flex flex-col items-center space-y-6">
-                <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
+                <Document file={url} onLoadSuccess={onDocumentLoadSuccess} onLoadError={(e) => setError(e?.message || String(e))}>
+                    {error && (
+                        <div className="p-3 bg-red-100 text-red-700 rounded w-full max-w-[800px]">PDF load error: {error}</div>
+                    )}
                     {Array.from({ length: numPages }).map((_, idx) => (
                         <div key={idx} className="w-full flex justify-center">
                             <div className="max-w-[800px] w-full">

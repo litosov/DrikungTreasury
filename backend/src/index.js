@@ -13,7 +13,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
+// Choose uploads directory: env > /data/uploads (Render disk) > repo uploads
+const DEFAULT_UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
+const DATA_UPLOAD_DIR = '/data/uploads';
+const UPLOAD_DIR = process.env.UPLOAD_DIR || (fs.existsSync('/data') ? DATA_UPLOAD_DIR : DEFAULT_UPLOAD_DIR);
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 app.use('/uploads', express.static(UPLOAD_DIR));
 
