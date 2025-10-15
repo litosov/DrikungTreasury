@@ -31,6 +31,7 @@ const PRIMARY_UPLOAD_DIR = process.env.UPLOAD_DIR || (fs.existsSync(PERSIST_ROOT
 if (!fs.existsSync(PRIMARY_UPLOAD_DIR)) {
     fs.mkdirSync(PRIMARY_UPLOAD_DIR, { recursive: true });
 }
+console.log(`[UPLOADS][CONFIG] primary=${PRIMARY_UPLOAD_DIR} legacy=${LEGACY_UPLOAD_DIR}`);
 
 // Log access to uploaded files for debugging
 app.use('/uploads', (req, res, next) => {
