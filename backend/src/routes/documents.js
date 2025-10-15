@@ -93,4 +93,29 @@ router.post('/', upload.fields([
     }
 });
 
+// Delete a document and its files (if present)
+router.delete('/:id', async (req, res) => {
+    try {
+        const doc = await Document.findById(req.params.id);
+        if (!doc) return res.status(404).json({ error: 'Not found' });
+        const files = [doc.filename, doc.tibetTranslationFilename].filter(Boolean);
+        for (const name of files) {
+            try {
+                // Remove from primary/legacy if exists
+                const primaryPath = path.join(UPLOAD_DIR, name);
+                if (fs.existsSync(primaryPath)) fs.unlinkSync(primaryPath);
+                const legacyPath = path.join(DEFAULT_UPLOAD_DIR, name);
+                if (fs.existsSync(legacyPath)) fs.unlinkSync(legacyPath);
+            } catch (e) {
+                console.warn('[DELETE][FILE][WARN]', e.message);
+            }
+        }
+        await Document.deleteOne({ _id: doc._id });
+        res.status(204).send();
+    } catch (err) {
+        console.error('[DELETE][ERROR]', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

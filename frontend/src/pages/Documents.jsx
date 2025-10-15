@@ -34,6 +34,17 @@ export default function Documents({ onSelect }) {
     const pages = Math.max(1, Math.ceil(docs.length / perPage))
     const visible = docs.slice(page * perPage, page * perPage + perPage)
 
+    const onDelete = async (d) => {
+        const yes = window.confirm(`Delete "${d.title}"? This will remove the record and uploaded files.`)
+        if (!yes) return
+        try {
+            await axios.delete(apiUrl(`/api/documents/${d._id}`))
+            setDocs(prev => prev.filter(x => x._id !== d._id))
+        } catch (e) {
+            alert('Failed to delete: ' + (e?.response?.data?.error || e.message))
+        }
+    }
+
     return (
         <div>
             <div className="bg-gray-800 text-white p-4 rounded mb-6 flex items-center justify-between">
@@ -80,6 +91,7 @@ export default function Documents({ onSelect }) {
                                 <div className="mt-3 md:mt-0 md:ml-4 flex flex-row md:flex-col items-center md:items-end gap-2">
                                     <a className="text-blue-600 text-sm" href={fileUrl(d.filename)} target="_blank" rel="noreferrer">Download</a>
                                     <button className="bg-blue-600 text-white px-3 py-1 rounded text-sm" onClick={() => openDoc(d)}>Read Text</button>
+                                    <button className="bg-red-600 text-white px-3 py-1 rounded text-sm" onClick={() => onDelete(d)}>Delete</button>
                                 </div>
                             </div>
                         ))}
