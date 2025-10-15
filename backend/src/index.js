@@ -21,22 +21,39 @@ app.use('/api', (req, res, next) => {
     next();
 });
 
-// Choose uploads directory: env > /data/uploads (Render disk) > repo uploads
-const DEFAULT_UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
-const DATA_UPLOAD_DIR = '/data/uploads';
-const UPLOAD_DIR = process.env.UPLOAD_DIR || (fs.existsSync('/data') ? DATA_UPLOAD_DIR : DEFAULT_UPLOAD_DIR);
-if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+// Configure uploads static serving.
+// Primary: UPLOAD_DIR env or /data/uploads if available; also mount legacy backend/uploads as fallback
+const LEGACY_UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
+const PERSIST_ROOT = '/data';
+const PERSIST_UPLOAD_DIR = path.join(PERSIST_ROOT, 'uploads');
+const PRIMARY_UPLOAD_DIR = process.env.UPLOAD_DIR || (fs.existsSync(PERSIST_ROOT) ? PERSIST_UPLOAD_DIR : LEGACY_UPLOAD_DIR);
+// Ensure primary upload dir exists
+if (!fs.existsSync(PRIMARY_UPLOAD_DIR)) {
+    fs.mkdirSync(PRIMARY_UPLOAD_DIR, { recursive: true });
+}
+
 // Log access to uploaded files for debugging
 app.use('/uploads', (req, res, next) => {
-    const p = path.join(UPLOAD_DIR, decodeURIComponent(req.path));
+    const p = path.join(PRIMARY_UPLOAD_DIR, decodeURIComponent(req.path));
     console.log(`[UPLOADS][REQ] ${req.method} ${req.originalUrl} -> ${p}`);
     res.on('finish', () => {
         console.log(`[UPLOADS][RES] ${req.method} ${req.originalUrl} -> ${res.statusCode}`);
     });
     next();
 });
-// Prevent fallthrough to SPA for missing files; return proper 404
-app.use('/uploads', express.static(UPLOAD_DIR, { fallthrough: false }));
+
+// Serve from primary uploads directory first, allow fallthrough to legacy
+app.use('/uploads', express.static(PRIMARY_UPLOAD_DIR, { fallthrough: true }));
+
+// Additionally, if legacy dir differs from primary, serve it under /uploads as well so old files still resolve
+if (LEGACY_UPLOAD_DIR !== PRIMARY_UPLOAD_DIR && fs.existsSync(LEGACY_UPLOAD_DIR)) {
+    app.use('/uploads', express.static(LEGACY_UPLOAD_DIR, { fallthrough: true }));
+}
+
+// Ensure missing files under /uploads return real 404 and do not hit SPA fallback
+app.use('/uploads', (req, res) => {
+    res.status(404).type('text/plain').send('Not Found');
+});
 
 // articles endpoints removed
 app.use('/api/documents', docsRouter);
