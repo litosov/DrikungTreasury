@@ -53,7 +53,32 @@ if (LEGACY_UPLOAD_DIR !== PRIMARY_UPLOAD_DIR && fs.existsSync(LEGACY_UPLOAD_DIR)
 
 // Ensure missing files under /uploads return real 404 and do not hit SPA fallback
 app.use('/uploads', (req, res) => {
+    const reqPath = decodeURIComponent(req.path);
+    const primaryPath = path.join(PRIMARY_UPLOAD_DIR, reqPath);
+    const legacyPath = path.join(LEGACY_UPLOAD_DIR, reqPath);
+    const primaryExists = fs.existsSync(primaryPath);
+    const legacyExists = fs.existsSync(legacyPath);
+    console.warn(`[UPLOADS][MISS] ${req.method} ${req.originalUrl} primary=${primaryPath} exists=${primaryExists} legacy=${legacyPath} exists=${legacyExists}`);
     res.status(404).type('text/plain').send('Not Found');
+});
+
+// Simple debug endpoint to check if a given filename exists in primary/legacy uploads dirs
+app.get('/api/uploads/exists', (req, res) => {
+    const name = (req.query.name || '').toString();
+    if (!name) return res.status(400).json({ error: 'name query param required' });
+    // Sanitize path traversal
+    if (name.includes('..') || name.includes('/') || name.includes('\\')) {
+        return res.status(400).json({ error: 'invalid name' });
+    }
+    const primaryPath = path.join(PRIMARY_UPLOAD_DIR, name);
+    const legacyPath = path.join(LEGACY_UPLOAD_DIR, name);
+    const primaryExists = fs.existsSync(primaryPath);
+    const legacyExists = fs.existsSync(legacyPath);
+    res.json({
+        name,
+        primary: { exists: primaryExists, path: primaryPath },
+        legacy: { exists: legacyExists, path: legacyPath }
+    });
 });
 
 // articles endpoints removed
