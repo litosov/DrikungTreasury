@@ -35,7 +35,8 @@ app.use('/uploads', (req, res, next) => {
     });
     next();
 });
-app.use('/uploads', express.static(UPLOAD_DIR));
+// Prevent fallthrough to SPA for missing files; return proper 404
+app.use('/uploads', express.static(UPLOAD_DIR, { fallthrough: false }));
 
 // articles endpoints removed
 app.use('/api/documents', docsRouter);
