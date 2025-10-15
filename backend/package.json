@@ -6,7 +6,7 @@
     "scripts": {
         "start": "node src/index.js",
         "dev": "nodemon src/index.js",
-        "postinstall": "npm --prefix ../frontend ci --production=false && npm --prefix ../frontend run build && mkdir -p public && cp -r ../frontend/dist/* public/"
+    "postinstall": "npm --prefix ../frontend ci --production=false && npm --prefix ../frontend run build && node scripts/copy-frontend.js"
     },
     "dependencies": {
         "cors": "^2.8.5",
